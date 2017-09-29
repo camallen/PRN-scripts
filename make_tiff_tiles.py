@@ -85,9 +85,13 @@ if size_x < 350:
 else:
     magnify = ""
 
+if overlap > 0:
+    overlapstr = "-overlap %d" % overlap
+else:
+    overlapstr = ''
 
 #gdal_retile.py -v -ps 300 300 -overlap 150 -co COMPRESS=JPEG -co TILED=YES -csv st_thomas_before.csv -csvDelim "," -tileIndex st_thomas_before.shp -targetDir ./st_thomas_before_tiles_tiff/ st_thomas_before.tif
-retile_command = "gdal_retile.py -v -ps %d %d -overlap %d -co COMPRESS=JPEG -co TILED=YES -csv %s.csv -csvDelim \",\" -tileIndex %s.shp -targetDir %s %s" % (size_x, size_y, overlap, infile_stem, infile_stem, tiledir_tiff, infile)
+retile_command = "gdal_retile.py -v -ps %d %d %s -co COMPRESS=JPEG -co TILED=YES -csv %s.csv -csvDelim \",\" -tileIndex %s.shp -targetDir %s %s" % (size_x, size_y, overlapstr, infile_stem, infile_stem, tiledir_tiff, infile)
 
 print(retile_command)
 os.system(retile_command)
