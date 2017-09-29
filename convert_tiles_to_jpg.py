@@ -12,6 +12,7 @@ import pandas as pd
 import ujson
 import scipy.interpolate
 import scipy.ndimage
+from osgeo import gdal, osr
 from pyproj import Proj, transform
 #import urllib
 #from PIL import ImageFile
@@ -29,7 +30,7 @@ except:
     print("    cparams=\"convert params\"")
     print("       parameters to feed into imagemagick convert command (in addition to epoch label)")
     print("    proj=epsg:32620")
-    print("       specify the projection if it's other than the above")
+    print("       specify the projection rather than get it from a sample file (use with great caution)")
     print("    --run")
     print("       if you actually want to make the jpegs and not just generate a script to do so")
     sys.exit(0)
@@ -62,6 +63,7 @@ tiledir_jpg = "tiles_%s_jpg"  % epoch_l
 cparams = ''
 run_maketiles = False
 projection_in = 'epsg:32620'
+user_proj     = False
 
 
 
@@ -75,6 +77,7 @@ if len(sys.argv) > 3:
             cparams = arg[1]
         elif arg[0] == "proj":
             projection_in = arg[1]
+            user_proj = True
         elif arg[0] == "--run":
             run_maketiles = True
 
@@ -104,11 +107,22 @@ mapzoom = 17
 #mapzoom = 13
 
 
-def get_projection(ssid):
-    # for now let's just return the same projection for everything
-    # this is for Sentinel 2
-    return Proj(init='epsg:32620')
+def get_projection(imgfile):
     # ideally we'd just take a single image filename, read the tif file, and figure out the projection string
+    try:
+        inDS = gdal.Open(imgfile)
+        inSRS_wkt = inDS.GetProjection()  # gives SRS in WKT
+        inSRS_converter = osr.SpatialReference()  # makes an empty spatial ref object
+        inSRS_converter.ImportFromWkt(inSRS_wkt)  # populates the spatial ref object with our WKT SRS
+        inSRS_forPyProj = inSRS_converter.ExportToProj4()  # Exports an SRS ref as a Proj4 string usable by PyProj
+        #print(inSRS_forPyProj)
+        return inSRS_forPyProj, Proj(inSRS_forPyProj)
+    except:
+        print(" Can't determine projection from images -- assuming something")
+        # for now let's just return the same projection for everything
+        # this is for Sentinel 2
+        proj_fallback = 'epsg:32620'
+        return proj_fallback, Proj(init=proj_fallback)
 
 
 # takes a single metadata row
@@ -143,8 +157,16 @@ def get_osm(row):
     return "http://www.openstreetmap.org/#map=%d/%.7f/%.7f" % (mapzoom, lat_ctr, lon_ctr)
 
 
+# if you're supplying anything with a colon like 'epsg:32619', you need init=.
+# if you are supplying something more like '+proj=utm +zone=19 +datum=WGS84 +units=m +no_defs ', which comes from e.g. gdal, using init= will crash things
+# even though those two strings represent the same projection
+# what fun this is
+try:
+    inProj  = Proj(projection_in)
+except:
+    inProj  = Proj(init=projection_in)
 
-inProj  = Proj(init=projection_in)
+# this is standard lat and lon
 outProj = Proj(init='epsg:4326')
 
 tileparams = pd.read_csv(infile, header=None)
@@ -153,6 +175,12 @@ tileparams = pd.read_csv(infile, header=None)
 #st_thomas_before_1_1.tif,285000.,289796.347102,2036082.130910,2041000.
 colnames = 'tif_file x_m_min x_m_max y_m_min y_m_max'.split()
 tileparams.columns = colnames
+
+# if the projection isn't supplied by the user, try to figure it out based on the first file
+if not user_proj:
+    first_file_name = tileparams.tif_file.head(1)[tileparams.tif_file.index[0]]
+    first_file_path = "%s/%s" % (tiledir_tiff, first_file_name)
+    projection_in, inProj = get_projection(first_file_path)
 
 tileparams['x_m_ctr'] = 0.5*(tileparams['x_m_min'] + tileparams['x_m_max'])
 tileparams['y_m_ctr'] = 0.5*(tileparams['y_m_min'] + tileparams['y_m_max'])
