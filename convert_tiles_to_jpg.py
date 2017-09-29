@@ -28,6 +28,8 @@ except:
     print("  Optional extra inputs (no spaces):")
     print("    cparams=\"convert params\"")
     print("       parameters to feed into imagemagick convert command (in addition to epoch label)")
+    print("    proj=epsg:32620")
+    print("       specify the projection if it's other than the above")
     print("    --run")
     print("       if you actually want to make the jpegs and not just generate a script to do so")
     sys.exit(0)
@@ -59,6 +61,9 @@ tiledir_jpg = "tiles_%s_jpg"  % epoch_l
 
 cparams = ''
 run_maketiles = False
+projection_in = 'epsg:32620'
+
+
 
 # check for other command-line arguments
 if len(sys.argv) > 3:
@@ -68,7 +73,9 @@ if len(sys.argv) > 3:
 
         if arg[0] == "cparams":
             cparams = arg[1]
-        if arg[0] == "--run":
+        elif arg[0] == "proj":
+            projection_in = arg[1]
+        elif arg[0] == "--run":
             run_maketiles = True
 
 
@@ -101,6 +108,7 @@ def get_projection(ssid):
     # for now let's just return the same projection for everything
     # this is for Sentinel 2
     return Proj(init='epsg:32620')
+    # ideally we'd just take a single image filename, read the tif file, and figure out the projection string
 
 
 # takes a single metadata row
@@ -135,8 +143,6 @@ def get_osm(row):
     return "http://www.openstreetmap.org/#map=%d/%.7f/%.7f" % (mapzoom, lat_ctr, lon_ctr)
 
 
-
-projection_in = 'epsg:32620'
 
 inProj  = Proj(init=projection_in)
 outProj = Proj(init='epsg:4326')
