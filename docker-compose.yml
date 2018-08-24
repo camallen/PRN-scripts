@@ -1,0 +1,10 @@
+version: '3'
+services:
+  tprn:
+    build: .
+    volumes:
+      - .:/tprn
+      - "${TPRN_DATA_DIR:-data}:/tprn/data"
+
+volumes:
+  data:
