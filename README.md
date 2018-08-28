@@ -30,9 +30,13 @@ To avoid specifing this every time you can setup your local data directory as an
 
 If you don't do this you will have to prefix `TPRN_DATA_DIR=/your_tpnr_data_dir` before the docker-compose commands below.
 
-For each epoch (before / after) run the following commands:
+For each epoch run the following commands:
 
-1. Run *make_tiff_tiles.py* on your before input data (note the outputs)
+1. Run *make_tiff_tiles.py* on your **before** input data (note the outputs)
 `docker-compose run --rm tprn python make_tiff_tiles.py data/roi_planet_before.tif before x=500 y=500`
-0. Run *convert_tiles_to_jpg.py* on your tiled tiff data
+0. Run *convert_tiles_to_jpg.py* on your tiled **before** tiff data
 `docker-compose run --rm tprn python convert_tiles_to_jpg.py data/roi_planet_before.csv before --run`
+0. Run *make_tiff_tiles.py* on your **after** input data (note the outputs)
+`docker-compose run --rm tprn python make_tiff_tiles.py data/roi_planet_after.tif after x=500 y=500`
+0. Run *convert_tiles_to_jpg.py* on your tiled tiff data
+`docker-compose run --rm tprn python convert_tiles_to_jpg.py data/roi_planet_after.csv after --run`
