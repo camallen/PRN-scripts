@@ -215,13 +215,7 @@ print("  Now writing script to convert to jpg...")
 
 fout = open(outfile_jpgsh, "w")
 for i, row in enumerate(tileparams.iterrows()):
-
-    #conv_sh = "convert %s/%s %s %s/%s" % (tiledir_tiff, tif_file, convert_params, tiledir_jpg, jpg_file)
-
     fout.write("convert %s/%s %s %s/%s\n" % (tiledir_tiff, row[1]['tif_file'], convert_params, tiledir_jpg, row[1]['jpg_file']))
-
-    #end loop
-
 fout.close()
 
 print("  ... script written to %s ." % outfile_jpgsh)
