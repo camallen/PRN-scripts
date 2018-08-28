@@ -47,8 +47,8 @@ except:
 epoch_l = before_or_after.lower()
 epoch_t = before_or_after.capitalize()
 
-tiledir_tiff  = "tiles_%s_tiff" % epoch_l
-tiledir_jpg = "tiles_%s_jpg"  % epoch_l
+tiledir_tiff  = "data/tiles_%s_tiff" % epoch_l
+tiledir_jpg = "data/tiles_%s_jpg"  % epoch_l
 
 # try:
 #     tiledir_tiff = sys.argv[2]
