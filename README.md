@@ -15,7 +15,7 @@ if you need to (re)build the container
 + `conda env export > conda_env/tprn.yml`
 
 # Running the scripts
-Run the scripts through docker-compose (**not currently working**):
+Run the scripts through docker-compose
 + `TPRN_DATA_DIR=/your_tpnr_data_dir docker-compose run --rm tprn python make_tiff_tiles.py`
 
 Alternatively bash into a container and run the scripts interactively
