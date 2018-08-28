@@ -39,10 +39,14 @@ except:
 
 if infile.endswith(".tif"):
     infile_stem = infile.replace(".tif", "")
+
 elif infile.endswith(".tiff"):
     infile_stem = infile.replace(".tiff", "")
+    os.path.basename(path)
 else:
     sys.exit("ERROR: input file must be a .tiff or .tif file")
+
+infile_base_name = os.path.basename(infile_stem)
 
 
 try:
@@ -53,8 +57,8 @@ except:
 epoch_l = before_or_after.lower()
 epoch_t = before_or_after.capitalize()
 
-tiledir_tiff  = "tiles_%s_tiff" % epoch_l
-tiledir_jpg = "tiles_%s_jpg"  % epoch_l
+tiledir_tiff  = "data/tiles_%s_tiff" % epoch_l
+tiledir_jpg = "data/tiles_%s_jpg"  % epoch_l
 
 if not os.path.exists(tiledir_tiff):
     os.mkdir(tiledir_tiff)
@@ -91,13 +95,16 @@ else:
     overlapstr = ''
 
 #gdal_retile.py -v -ps 300 300 -overlap 150 -co COMPRESS=JPEG -co TILED=YES -csv st_thomas_before.csv -csvDelim "," -tileIndex st_thomas_before.shp -targetDir ./st_thomas_before_tiles_tiff/ st_thomas_before.tif
-retile_command = "gdal_retile.py -v -ps %d %d %s -co COMPRESS=JPEG -co TILED=YES -csv %s.csv -csvDelim \",\" -tileIndex %s.shp -targetDir %s %s" % (size_x, size_y, overlapstr, infile_stem, infile_stem, tiledir_tiff, infile)
+retile_command = "gdal_retile.py -v -ps %d %d %s -co COMPRESS=JPEG -co TILED=YES -csv %s.csv -csvDelim \",\" -tileIndex %s.shp -targetDir %s %s" % (size_x, size_y, overlapstr, infile_base_name, infile_base_name, tiledir_tiff, infile)
 
 print(retile_command)
 os.system(retile_command)
 
 # now move the CSV file out of the tiled directory
-os.system("mv %s/%s.csv ./" % (tiledir_tiff, infile_stem))
+csv_out_dir = os.path.dirname(infile_stem)
+csv_move_command = "mv %s/%s.csv %s" % (tiledir_tiff, infile_base_name, csv_out_dir)
+print(csv_move_command)
+os.system(csv_move_command)
 
 
 
