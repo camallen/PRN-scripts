@@ -42,11 +42,9 @@ if infile.endswith(".tif"):
 
 elif infile.endswith(".tiff"):
     infile_stem = infile.replace(".tiff", "")
-    os.path.basename(path)
+
 else:
     sys.exit("ERROR: input file must be a .tiff or .tif file")
-
-infile_base_name = os.path.basename(infile_stem)
 
 
 try:
@@ -57,13 +55,19 @@ except:
 epoch_l = before_or_after.lower()
 epoch_t = before_or_after.capitalize()
 
-tiledir_tiff  = "data/tiles_%s_tiff" % epoch_l
-tiledir_jpg = "data/tiles_%s_jpg"  % epoch_l
+# allow the caller to have the input data in a different directory
+data_input_dir = os.environ.get('DATA_IN_DIR','data/')
+
+# allow the caller to specify where the data products go
+# defaults to the local data directory
+data_output_dir = os.environ.get('DATA_OUT_DIR','data/')
+
+# setup the tile output paths
+tiledir_prefix = "%s/tiles_%s" % (data_output_dir, epoch_l)
+tiledir_tiff  = "%s_tiff" % tiledir_prefix
 
 if not os.path.exists(tiledir_tiff):
     os.mkdir(tiledir_tiff)
-if not os.path.exists(tiledir_jpg):
-    os.mkdir(tiledir_jpg)
 
 size_x = 500
 size_y = 500
@@ -95,14 +99,14 @@ else:
     overlapstr = ''
 
 #gdal_retile.py -v -ps 300 300 -overlap 150 -co COMPRESS=JPEG -co TILED=YES -csv st_thomas_before.csv -csvDelim "," -tileIndex st_thomas_before.shp -targetDir ./st_thomas_before_tiles_tiff/ st_thomas_before.tif
-retile_command = "gdal_retile.py -v -ps %d %d %s -co COMPRESS=JPEG -co TILED=YES -csv %s.csv -csvDelim \",\" -tileIndex %s.shp -targetDir %s %s" % (size_x, size_y, overlapstr, infile_base_name, infile_base_name, tiledir_tiff, infile)
+infile_path = "%s/%s" % (data_input_dir, infile)
+retile_command = "gdal_retile.py -v -ps %d %d %s -co COMPRESS=JPEG -co TILED=YES -csv %s.csv -csvDelim \",\" -tileIndex %s.shp -targetDir %s %s" % (size_x, size_y, overlapstr, infile_stem, infile_stem, tiledir_tiff, infile_path)
 
 print(retile_command)
 os.system(retile_command)
 
 # now move the CSV file out of the tiled directory
-csv_out_dir = os.path.dirname(infile_stem)
-csv_move_command = "mv %s/%s.csv %s" % (tiledir_tiff, infile_base_name, csv_out_dir)
+csv_move_command = "mv %s/%s.csv %s" % (tiledir_tiff, infile_stem, data_output_dir)
 print(csv_move_command)
 os.system(csv_move_command)
 

@@ -9,37 +9,46 @@ Use docker-compse to run the code and attach your input data to the container
 if you need to (re)build the container
 + `docker-compose build tprn`
 
-# Rebuild the conda deps and export the config
-+ `docker-compose build tprn-conda-env-build`
-+ `docker-compose run --rm tprn-conda-env-build bash`
-+ `conda env export > conda_env/tprn.yml`
+#### Add your local data directory to the docker container
+To allow the code to access you data directory you can specify the path via an ENV variable via `TPRN_DATA_DIR=/path/to/tiff/data` either at run time or for your shell session. This directory will be mounted into the running container to the
+`/tprn/data/ directory`.
+
+To avoid specifying this every time you can setup your local data directory as an environment variable, e.g. `export TPRN_DATA_DIR=/your_tpnr_data_dir`.
+
+If you don't do this you will have to prefix `TPRN_DATA_DIR=/your_tpnr_data_dir` before the docker-compose commands below, e.g.
++ `TPRN_DATA_DIR=/tprn_data/ docker-compose run --rm tprn python make_tiff_tiles.py`
+
+All the example scripts below assume you have set this env variable.
 
 # Running the scripts
 Run the scripts through docker-compose
-+ `TPRN_DATA_DIR=/your_tpnr_data_dir docker-compose run --rm tprn python make_tiff_tiles.py`
++ `docker-compose run --rm tprn python make_tiff_tiles.py`
 
 Alternatively bash into a container and run the scripts interactively
-+ `TPRN_DATA_DIR=/your_tpnr_data_dir docker-compose run --rm tprn bash`
++ `docker-compose run --rm tprn bash`
   + activate the conda env
   `source activate tprn`
   + from the prompt in the container
   `python make_tiff_tiles.py`
 
 # Tile up the before and after tiffs
-To avoid specifing this every time you can setup your local data directory as an environment variable, e.g. `export TPRN_DATA_DIR=/your_tpnr_data_dir`.
-
-If you don't do this you will have to prefix `TPRN_DATA_DIR=/your_tpnr_data_dir` before the docker-compose commands below.
-
 For each epoch run the following commands:
 
-1. Run *make_tiff_tiles.py* on your **before** input data (note the outputs)
-`docker-compose run --rm tprn python make_tiff_tiles.py data/roi_planet_before.tif before x=500 y=500`
+1. Run *make_tiff_tiles.py* on your **before** input data file (note the outputs of this script)
+`docker-compose run --rm tprn python make_tiff_tiles.py roi_planet_before.tif before x=500 y=500`
 0. Run *convert_tiles_to_jpg.py* on your tiled **before** tiff data
-`docker-compose run --rm tprn python convert_tiles_to_jpg.py data/roi_planet_before.csv before --run`
+`docker-compose run --rm tprn python convert_tiles_to_jpg.py roi_planet_before.csv before --run`
 0. Run *make_tiff_tiles.py* on your **after** input data (note the outputs)
-`docker-compose run --rm tprn python make_tiff_tiles.py data/roi_planet_after.tif after x=500 y=500`
+`docker-compose run --rm tprn python make_tiff_tiles.py roi_planet_after.tif after x=500 y=500`
 0. Run *convert_tiles_to_jpg.py* on your tiled tiff data
-`docker-compose run --rm tprn python convert_tiles_to_jpg.py data/roi_planet_after.csv after --run`
+`docker-compose run --rm tprn python convert_tiles_to_jpg.py roi_planet_after.csv after --run`
+
+# Rebuild the conda deps and export the config
+Note: most likely not needed right now
++ `docker-compose build tprn-conda-env-build`
++ `docker-compose run --rm tprn-conda-env-build bash`
++ `conda env export > conda_env/tprn.yml`
+
 
 ## TODO
 

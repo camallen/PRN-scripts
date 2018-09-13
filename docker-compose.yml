@@ -2,6 +2,9 @@ version: '3'
 services:
   tprn:
     build: .
+    environment:
+      - "DATA_OUT_DIR=${DATA_OUT_DIR:-data}"
+      - TPRN_DATA_DIR=/data/project_data/prn/events/dominica
     volumes:
       - .:/tprn
       - "${TPRN_DATA_DIR:-data}:/tprn/data"
