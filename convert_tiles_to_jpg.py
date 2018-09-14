@@ -47,25 +47,19 @@ except:
 epoch_l = before_or_after.lower()
 epoch_t = before_or_after.capitalize()
 
-tiledir_tiff  = "data/tiles_%s_tiff" % epoch_l
-tiledir_jpg = "data/tiles_%s_jpg"  % epoch_l
+# use the data dir for outputs from the make tiles as inputs here
+tiled_data_dir = os.environ.get('DATA_OUT_DIR','outputs/')
+tiledir_tiff  = "%s/tiles_%s_tiff" % (tiled_data_dir, epoch_l)
+tiledir_jpg  = "%s/tiles_%s_jpg" % (tiled_data_dir, epoch_l)
 
-# try:
-#     tiledir_tiff = sys.argv[2]
-# except:
-#     tiledir_tiff = "st_thomas_before_tiles_tiff"
-#
-# try:
-#     tiledir_jpg = sys.argv[3]
-# except:
-#     tiledir_jpg = "st_thomas_before_tiles_jpg"
+# setup the tile output paths
+if not os.path.exists(tiledir_jpg):
+    os.mkdir(tiledir_jpg)
 
 cparams = ''
 run_maketiles = False
 projection_in = 'epsg:32620'
 user_proj     = False
-
-
 
 # check for other command-line arguments
 if len(sys.argv) > 3:
@@ -82,29 +76,17 @@ if len(sys.argv) > 3:
             run_maketiles = True
 
 
-
 convert_params = "%s -gravity south -stroke \"#000C\" -font Arial -pointsize 16 -strokewidth 3 -annotate 0 \"%s\" -stroke none -fill white -annotate 0 \"%s\"" % (cparams, epoch_t, epoch_t)
 
 print("jpg convert params: \n%s\n" % convert_params)
 
-
-# try:
-#     convert_params = sys.argv[4]
-# except:
-#     convert_params = "-magnify -gravity south -stroke \"#000C\" -font Arial -pointsize 16 -strokewidth 3 -annotate 0 \"Before\" -stroke none -fill white -annotate 0 \"Before\""
-#     #convert_params = "-magnify -gamma 1.1,1.05,1.2 -gravity south -stroke \"#000C\" -font Arial -pointsize 16 -strokewidth 3 -annotate 0 \"After\" -stroke none -fill white -annotate 0 \"After\""
-#     #convert_params = "-magnify -gravity south -stroke \"#000C\" -font Arial -pointsize 16 -strokewidth 3 -annotate 0 \"After\" -stroke none -fill white -annotate 0 \"After\""
-
-
-
 magfac = 2**convert_params.count("-magnify")
 
-# for high-res imaging like DigitalGlobe
-mapzoom = 17
-# for medium stuff like Planet Labs
-#mapzoom = 15
-# for lower-res (~10 m)
-#mapzoom = 13
+# allow the user to specify the default map zoom in the subject metadata
+# for high-res imaging like DigitalGlobe - 17
+# for medium stuff like Planet Labs - 15
+# for lower-res (~10 m) - 13
+mapzoom = os.environ.get('SUBJECT_METADATA_MAP_ZOOM',15)
 
 
 def get_projection(imgfile):
@@ -136,7 +118,6 @@ def get_corner_latlong(metadata, inProj, outProj):
     lon_max, lat_max = transform(inProj,outProj,x_m_max,y_m_max)
 
     return lon_min, lon_max, lat_min, lat_max
-
 
 
 def getsizes_local(imagefile):

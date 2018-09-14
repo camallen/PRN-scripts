@@ -56,15 +56,14 @@ epoch_l = before_or_after.lower()
 epoch_t = before_or_after.capitalize()
 
 # allow the caller to have the input data in a different directory
-data_input_dir = os.environ.get('DATA_IN_DIR','data/')
+data_input_dir = os.environ.get('DATA_IN_DIR','inputs/')
 
 # allow the caller to specify where the data products go
 # defaults to the local data directory
-data_output_dir = os.environ.get('DATA_OUT_DIR','data/')
+data_output_dir = os.environ.get('DATA_OUT_DIR','outputs/')
 
 # setup the tile output paths
-tiledir_prefix = "%s/tiles_%s" % (data_output_dir, epoch_l)
-tiledir_tiff  = "%s_tiff" % tiledir_prefix
+tiledir_tiff  = "%s/tiles_%s_tiff" % (data_output_dir, epoch_l)
 
 if not os.path.exists(tiledir_tiff):
     os.mkdir(tiledir_tiff)

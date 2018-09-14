@@ -3,11 +3,12 @@ services:
   tprn:
     build: .
     environment:
-      - "DATA_OUT_DIR=${DATA_OUT_DIR:-data}"
-      - TPRN_DATA_DIR=/data/project_data/prn/events/dominica
+      - "DATA_IN_DIR=${DATA_OUT_DIR:-inputs}"
+      - "DATA_OUT_DIR=${DATA_OUT_DIR:-outputs}"
     volumes:
-      - .:/tprn
-      - "${TPRN_DATA_DIR:-data}:/tprn/data"
+      - "${TPRN_IN_DATA_DIR:-./inputs}:/tprn/inputs"
+      - "${TPRN_OUT_DATA_DIR:-./outputs}:/tprn/outputs"
+      - .:/tprn # remove this after dev, it's used to inject the latest code
 
   tprn-conda-env-build:
     build:
@@ -17,4 +18,5 @@ services:
       - .:/tprn
 
 volumes:
-  data:
+  inputs:
+  outputs:
