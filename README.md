@@ -32,15 +32,26 @@ Alternatively bash into a container and run the scripts interactively
   `python make_tiff_tiles.py`
 
 # Tile up the before and after tiffs
+*The input TIFF images are should be in the mounted input directory (see docker-compose.yml for more details)*
 For each epoch run the following commands:
 
-1. Run *make_tiff_tiles.py* on your **before** input data file (note the outputs of this script)
+**Before images**
+1. Run *make_tiff_tiles.py* on your **before** input data file
 `docker-compose run --rm tprn python make_tiff_tiles.py roi_planet_before.tif before x=500 y=500`
+  + Use the output `roi_planet_before.csv` file as an input to the next step
+  ```
+  FINISHED
+  mv outputs/tiles_before_tiff/roi_planet_before.csv outputs
+  ... images are tiled and saved to outputs/tiles_before_tiff/
+  with tiled image coordinates in roi_planet_before.csv.
+  ```
 0. Run *convert_tiles_to_jpg.py* on your tiled **before** tiff data
 `docker-compose run --rm tprn python convert_tiles_to_jpg.py roi_planet_before.csv before --run`
-0. Run *make_tiff_tiles.py* on your **after** input data (note the outputs)
+
+**After images**
+1. Run *make_tiff_tiles.py* on your **after** input data
 `docker-compose run --rm tprn python make_tiff_tiles.py roi_planet_after.tif after x=500 y=500`
-0. Run *convert_tiles_to_jpg.py* on your tiled tiff data
+0. Run *convert_tiles_to_jpg.py* on your tiled tiff data (using the output from step above as the input csv file)
 `docker-compose run --rm tprn python convert_tiles_to_jpg.py roi_planet_after.csv after --run`
 
 # Rebuild the conda deps and export the config
