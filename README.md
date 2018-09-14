@@ -56,7 +56,6 @@ Keep following the steps outlined in https://docs.google.com/document/d/1QveOh74
 
 Subject import from TIFF
 
-1. Allow the output dir to be specified through ENV vars (with default) and avoid hard coding the /data dir into the scripts
 0. Check the subject metadata makes sense and add more in, e.g. add image scale to the metadata (subtract corner coordinates in meters and report as e.g. 1.8 km x 1.8 km). This is a placeholder measure for adding a proper scale bar to the jpegs.
 0. auto make the subject set manifest via the tiles_*_jpg folders and the accompanying *_extra.csv file metadata. ensure they match while making the manifest
 0. use the zooniverse cli tool to upload the created manifest
