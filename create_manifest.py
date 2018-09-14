@@ -5,8 +5,9 @@ zooniverse upload csv manifest for use by the panoptes cli subject uploader
 
 '''
 
-import sys, os, pdb
+import sys, os, re
 import pandas as pd
+import pdb
 
 executable = sys.argv[0]
 
@@ -33,6 +34,25 @@ for index, row in before_manifest_df.iterrows():
         print('Unknown row %s in after manifest file: %s' % (index, e))
         break
 
+    # check the file names match
+    # pdb.set_trace()
+    before_prefix, before_suffix = re.split("before", row['tif_file'])
+    after_prefix, after_suffix = re.split("after", after_manifest_row['tif_file'])
+    tif_file_names_match = (before_prefix == after_prefix) and (before_suffix == after_suffix)
+
+    before_prefix, before_suffix = re.split("before", row['jpg_file'])
+    after_prefix, after_suffix = re.split("after", after_manifest_row['jpg_file'])
+    jpg_file_names_match = (before_prefix == after_prefix) and (before_suffix == after_suffix)
+
+    # pdb.set_trace()
+    if not (tif_file_names_match and jpg_file_names_match):
+        print('\nError: file tiling name parts do not match!')
+        print('Tile filenames in manifests for row %s do not match.and can not be grouped into 1 subject!' % (index))
+        print('%s and %s' % (row['tif_file'], after_manifest_row['tif_file']))
+        print('%s and %s' % (row['jpg_file'], after_manifest_row['jpg_file']))
+        break
+
+
     # TODO: a much better way of comparing col values
     # cols_to_compare = ['lon_min', 'lon_max', 'lat_min', 'lat_max']
     lon_min_match = row['lon_min'] == after_manifest_row['lon_min']
@@ -45,7 +65,6 @@ for index, row in before_manifest_df.iterrows():
         print('\nError: files do not match!')
         print('Geo coords in manifests for row %s have different coords!' % (index))
         break
-
 
 
 
