@@ -34,6 +34,8 @@ for index, row in before_manifest_df.iterrows():
         print('Unknown row %s in after manifest file: %s' % (index, e))
         break
 
+    pdb.set_trace()
+
     # check the file names match
     before_prefix, before_suffix = re.split("before", row['tif_file'])
     after_prefix, after_suffix = re.split("after", after_manifest_row['tif_file'])
@@ -49,6 +51,10 @@ for index, row in before_manifest_df.iterrows():
         print('%s and %s' % (row['tif_file'], after_manifest_row['tif_file']))
         print('%s and %s' % (row['jpg_file'], after_manifest_row['jpg_file']))
         break
+
+    # TODO: check the JPG files actually exist!
+    # The tif files are created by gdal so will exist
+    # jpg files are via a shell script and convert so may not as errors? may just report
 
 
     # TODO: a much better way of comparing col values
@@ -70,6 +76,11 @@ for index, row in before_manifest_df.iterrows():
 
     # Add attribution columns for DG, Planet etc
     # so that each subject has the required image attribution and license information.
+
+    # add image scale coords in (put this into the convert_tiles_to_jpg.py script?)
+    # x_km = (row['x_m_max'] - row['x_m_min']) / 1000
+    # y_km = (row['y_m_max'] - row['y_m_min']) / 1000
+
 
     # look at hiding most metadata from talk
     # In future deployments it might be good to hide most of the metadata columns so that people don’t have to scroll to get to the Maps links (which always seem to show up at the bottom no matter where they are in the manifest). But that will require making my processing scripts able to deal with the “//”, “#” and “!” prefixes that would be needed for that. So I haven’t done it yet.
