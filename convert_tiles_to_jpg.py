@@ -36,9 +36,6 @@ except:
     sys.exit(0)
 
 
-outfile_extra = infile.replace(".csv", "_extra.csv")
-outfile_jpgsh = infile.replace(".csv", "_makejpg.sh")
-
 try:
     before_or_after = sys.argv[2]
 except:
@@ -51,6 +48,9 @@ epoch_t = before_or_after.capitalize()
 tiled_data_dir = os.environ.get('DATA_OUT_DIR','outputs/')
 tiledir_tiff  = "%s/tiles_%s_tiff" % (tiled_data_dir, epoch_l)
 tiledir_jpg  = "%s/tiles_%s_jpg" % (tiled_data_dir, epoch_l)
+
+outfile_extra = "%s/%s" % (tiled_data_dir, infile.replace(".csv", "_extra.csv"))
+outfile_jpgsh =  "%s/%s" % (tiled_data_dir, infile.replace(".csv", "_makejpg.sh"))
 
 # setup the tile output paths
 if not os.path.exists(tiledir_jpg):
