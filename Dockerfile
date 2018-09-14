@@ -17,6 +17,9 @@ ADD conda_env/tprn.yml /tprn
 # use the existing conda env for deps
 RUN conda env create -f tprn.yml
 
+# allow the conda env to run via bash
+RUN echo "source activate tprn" > ~/.bashrc
+
 ADD ./ /tprn
 
 # activate the created tprn environment from the yaml file
