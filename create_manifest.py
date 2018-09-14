@@ -7,7 +7,7 @@ zooniverse upload csv manifest for use by the panoptes cli subject uploader
 
 import sys, os, re
 import pandas as pd
-import pdb
+import pdb # pdb.set_trace()
 
 executable = sys.argv[0]
 
@@ -35,7 +35,6 @@ for index, row in before_manifest_df.iterrows():
         break
 
     # check the file names match
-    # pdb.set_trace()
     before_prefix, before_suffix = re.split("before", row['tif_file'])
     after_prefix, after_suffix = re.split("after", after_manifest_row['tif_file'])
     tif_file_names_match = (before_prefix == after_prefix) and (before_suffix == after_suffix)
@@ -44,7 +43,6 @@ for index, row in before_manifest_df.iterrows():
     after_prefix, after_suffix = re.split("after", after_manifest_row['jpg_file'])
     jpg_file_names_match = (before_prefix == after_prefix) and (before_suffix == after_suffix)
 
-    # pdb.set_trace()
     if not (tif_file_names_match and jpg_file_names_match):
         print('\nError: file tiling name parts do not match!')
         print('Tile filenames in manifests for row %s do not match.and can not be grouped into 1 subject!' % (index))
@@ -66,6 +64,12 @@ for index, row in before_manifest_df.iterrows():
         print('Geo coords in manifests for row %s have different coords!' % (index))
         break
 
+    # construct a combined data from that will create the resulting manifest
+    # copying the the jpg before tile and associated metadata
+    # and append the after subject tile jpg as well
 
+    # Add attribution columns for DG, Planet etc
+    # so that each subject has the required image attribution and license information.
 
-# compare the
+    # look at hiding most metadata from talk
+    # In future deployments it might be good to hide most of the metadata columns so that people don’t have to scroll to get to the Maps links (which always seem to show up at the bottom no matter where they are in the manifest). But that will require making my processing scripts able to deal with the “//”, “#” and “!” prefixes that would be needed for that. So I haven’t done it yet.
