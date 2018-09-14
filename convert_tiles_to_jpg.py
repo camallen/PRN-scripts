@@ -150,7 +150,8 @@ except:
 # this is standard lat and lon
 outProj = Proj(init='epsg:4326')
 
-tileparams = pd.read_csv(infile, header=None)
+infile_path = "%s/%s" % (tiled_data_dir, infile)
+tileparams = pd.read_csv(infile_path, header=None)
 # the output doesn't have a header automatically but we know what the parameters are
 # the output format is set by gdal_retile so unless that version changes, this shouldn't change
 #st_thomas_before_1_1.tif,285000.,289796.347102,2036082.130910,2041000.
