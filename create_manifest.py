@@ -21,6 +21,11 @@ except:
     sys.exit(0)
 # TODO: add provider provider param for input for correct subject metadata source attribution
 
+print("Constructing the before / after manifest upload CSV...")
+
+# use the data dir for outputs from the make tiles as inputs here
+tiled_data_dir = os.environ.get('DATA_OUT_DIR','outputs/')
+
 # read both into pandas data frames?
 before_manifest_df = pd.read_csv(before_csv_infile)
 after_manifest_df = pd.read_csv(after_csv_infile)
@@ -33,8 +38,6 @@ for index, row in before_manifest_df.iterrows():
         print('\nError: files do not match!')
         print('Unknown row %s in after manifest file: %s' % (index, e))
         break
-
-    pdb.set_trace()
 
     # check the file names match
     before_prefix, before_suffix = re.split("before", row['tif_file'])
@@ -52,10 +55,17 @@ for index, row in before_manifest_df.iterrows():
         print('%s and %s' % (row['jpg_file'], after_manifest_row['jpg_file']))
         break
 
-    # TODO: check the JPG files actually exist!
     # The tif files are created by gdal so will exist
-    # jpg files are via a shell script and convert so may not as errors? may just report
-
+    # jpg files are via a shell script using `convert`
+    # this program may error, report and continue leaving some missing JPG images
+    before_jpg_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file'])
+    after_jpg_path = "%s/tiles_after_jpg/%s" % (tiled_data_dir, after_manifest_row['jpg_file'])
+    jpg_files_exist = os.path.isfile(before_jpg_path) and os.path.isfile(after_jpg_path)
+    if not jpg_files_exist:
+        print('\nError: missing JPG subject files!')
+        print('Check the before file exists: %s' % before_jpg_path)
+        print('Check the after file exists: %s' % after_jpg_path)
+        break
 
     # TODO: a much better way of comparing col values
     # cols_to_compare = ['lon_min', 'lon_max', 'lat_min', 'lat_max']
