@@ -80,17 +80,28 @@ for index, row in before_manifest_df.iterrows():
         print('Geo coords in manifests for row %s have different coords!' % (index))
         break
 
-    # construct a combined data from that will create the resulting manifest
-    # copying the the jpg before tile and associated metadata
-    # and append the after subject tile jpg as well
+# All input validations have passed!
 
-    # Add attribution columns for DG, Planet etc
-    # so that each subject has the required image attribution and license information.
+# construct a combined data from that will create the resulting manifest
+# copying the the jpg before tile and associated metadata
+# and append the after subject tile jpg as well
 
-    # add image scale coords in (put this into the convert_tiles_to_jpg.py script?)
-    # x_km = (row['x_m_max'] - row['x_m_min']) / 1000
-    # y_km = (row['y_m_max'] - row['y_m_min']) / 1000
+# sizes = [getsizes_local(q) for q in tileparams.tif_file]
+# prm_zoo_manifest['tifsize_x_pix'] = [q[0] for q in sizes]
+# prm_zoo_manifest['tifsize_y_pix'] = [q[1] for q in sizes]
+# prm_zoo_manifest['imsize_x_pix'] = magfac * tileparams['tifsize_x_pix']
+# prm_zoo_manifest['imsize_y_pix'] = magfac * tileparams['tifsize_y_pix']
+# prm_zoo_manifest['google_maps_link'] = [get_gmaps(q) for q in tileparams.iterrows()]
+# prm_zoo_manifest['openstreetmap_link'] = [get_osm(q) for q in tileparams.iterrows()]
+# prm_zoo_manifest.to_csv('manifest_output_path')
+
+# Add attribution columns for DG, Planet etc
+# so that each subject has the required image attribution and license information.
+
+# add image scale coords in (put this into the convert_tiles_to_jpg.py script?)
+# x_km = (row['x_m_max'] - row['x_m_min']) / 1000
+# y_km = (row['y_m_max'] - row['y_m_min']) / 1000
 
 
-    # look at hiding most metadata from talk
-    # In future deployments it might be good to hide most of the metadata columns so that people don’t have to scroll to get to the Maps links (which always seem to show up at the bottom no matter where they are in the manifest). But that will require making my processing scripts able to deal with the “//”, “#” and “!” prefixes that would be needed for that. So I haven’t done it yet.
+# look at hiding most metadata from talk
+# In future deployments it might be good to hide most of the metadata columns so that people don’t have to scroll to get to the Maps links (which always seem to show up at the bottom no matter where they are in the manifest). But that will require making my processing scripts able to deal with the “//”, “#” and “!” prefixes that would be needed for that. So I haven’t done it yet.
