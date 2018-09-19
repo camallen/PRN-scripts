@@ -52,6 +52,9 @@ For each epoch run the following commands:
 0. Run *convert_tiles_to_jpg.py* on your tiled tiff data (using the output from step above as the input csv file)
 `docker-compose run --rm tprn python convert_tiles_to_jpg.py roi_planet_after.csv after --run`
 
+# Create the before/after subject manifest
++ `docker-compose run --rm tprn python create_manifest.py outputs/roi_before_extra.csv outputs/roi_after_extra.csv`
+
 # Rebuild the conda deps and export the config
 Note: most likely not needed right now
 + `docker-compose build tprn-conda-env-build`
