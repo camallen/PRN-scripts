@@ -11,7 +11,7 @@ if you need to (re)build the container
 
 #### Add your local data directory to the docker container
 To allow the code to access you data directory you can specify the path via an ENV variable via `TPRN_DATA_DIR=/path/to/tiff/data` either at run time or for your shell session. This directory will be mounted into the running container to the
-`/tprn/data/ directory`.
+`/tprn/data/` directory.
 
 To avoid specifying this every time you can setup your local data directory as an environment variable, e.g. `export TPRN_DATA_DIR=/your_tpnr_data_dir`.
 
@@ -26,10 +26,8 @@ Run the scripts through docker-compose
 
 Alternatively bash into a container and run the scripts interactively
 + `docker-compose run --rm tprn bash`
-  + activate the conda env
-  `source activate tprn`
-  + from the prompt in the container
-  `python make_tiff_tiles.py`
+  + `python make_tiff_tiles.py` at the container prompt
+
 
 # Tile up the before and after tiffs
 *The input TIFF images are should be in the mounted input directory (see docker-compose.yml for more details)*
