@@ -5,21 +5,29 @@ zooniverse upload csv manifest for use by the panoptes cli subject uploader
 
 '''
 
-import sys, os, re
+import sys, os, re, argparse
 import pandas as pd
 import pdb # pdb.set_trace()
 
-executable = sys.argv[0]
+parser = argparse.ArgumentParser(description='Create a tiled image data csv manifest to upload subjects to the Zooniverse.')
+parser.add_argument('--source', dest='attribution_source', choices=['dg', 'planet', 'sentinel', 'landsat'], required=True)
+parser.add_argument('before_csv_infile',help='the before epoch file tile metadata from convert_tiles_to_jpg.py')
+parser.add_argument('after_csv_infile', help='the after epoch file tile metadata from convert_tiles_to_jpg.py')
+args = parser.parse_args()
 
-try:
-    before_csv_infile = sys.argv[1]
-    after_csv_infile  = sys.argv[2]
-except:
-    print("\nUsage: %s before_files_extra.csv after_files_extra.csv" % executable)
-    print("      before_files_extra.csv is the before epoch tile metadata from convert_tiles_to_jpg.py")
-    print("      after_files_extra.csv  is the after epoch tile metadata from convert_tiles_to_jpg.py")
-    sys.exit(0)
+before_csv_infile = args.before_csv_infile
+after_csv_infile  = args.after_csv_infile
+attribution_source  = args.attribution_source
+
+pdb.set_trace()
+
+
 # TODO: add provider provider param for input for correct subject metadata source attribution
+# DigitalGlobe Open Data Program - Creative Commons Attribution Non Commercial 4.0
+# Planet Team ([YEAR]). Planet Application Program Interface: In Space For Life on Earth. San Francisco, CA. https://api.planet.com License: CC-BY-SA
+# Copernicus Sentinel data [Year] for Sentinel data
+# USGS/NASA Landsat
+pdb.set_trace()
 
 print("Constructing the before / after manifest upload CSV...")
 
@@ -85,15 +93,52 @@ for index, row in before_manifest_df.iterrows():
 # construct a combined data from that will create the resulting manifest
 # copying the the jpg before tile and associated metadata
 # and append the after subject tile jpg as well
+hidden_existing_output_columns = (
+    'projection_orig',
+    'lat_ctr',
+    'lat_max',
+    'lat_min',
+    'lon_ctr',
+    'lon_max',
+    'lon_min',
+    'x_m_ctr',
+    'x_m_max',
+    'x_m_min',
+    'y_m_ctr',
+    'y_m_max',
+    'y_m_min',
+    'imsize_x_pix',
+    'imsize_y_pix',
+    'tifsize_x_pix',
+    'tifsize_y_pix'
+)
+non_hidden_output_cols = (
+    'google_maps_link',
+    'openstreetmap_link'
+)
+# before_manifest_df.columns
+# 'tif_file', 'x_m_min', 'x_m_max', 'y_m_min', 'y_m_max',
+#        'x_m_ctr', 'y_m_ctr', 'projection_orig', 'jpg_file', 'lon_min',
+#        'lon_max', 'lat_min', 'lat_max', 'lon_ctr', 'lat_ctr', 'tifsize_x_pix',
+#        'tifsize_y_pix', 'imsize_x_pix', 'imsize_y_pix', 'google_maps_link',
+#        'openstreetmap_link'
 
-# sizes = [getsizes_local(q) for q in tileparams.tif_file]
-# prm_zoo_manifest['tifsize_x_pix'] = [q[0] for q in sizes]
-# prm_zoo_manifest['tifsize_y_pix'] = [q[1] for q in sizes]
-# prm_zoo_manifest['imsize_x_pix'] = magfac * tileparams['tifsize_x_pix']
-# prm_zoo_manifest['imsize_y_pix'] = magfac * tileparams['tifsize_y_pix']
-# prm_zoo_manifest['google_maps_link'] = [get_gmaps(q) for q in tileparams.iterrows()]
-# prm_zoo_manifest['openstreetmap_link'] = [get_osm(q) for q in tileparams.iterrows()]
-# prm_zoo_manifest.to_csv('manifest_output_path')
+prn_zoo_manifest = pd.DataFrame(index=before_manifest_df.index, columns=[])
+prn_zoo_manifest['jpg_file_before'] = before_manifest_df['jpg_file']
+prn_zoo_manifest['jpg_file_after'] = after_manifest_df['jpg_file']
+prn_zoo_manifest['tif_file_before'] = before_manifest_df['tif_file']
+prn_zoo_manifest['tif_file_after'] = after_manifest_df['tif_file']
+
+# TODO: add the source attribution from a runtime param
+prn_zoo_manifest['attribution'] = 'TODO: Attribution source goes here!'
+
+# for column_name in hidden_existing_output_columns:
+#     "" % column_name
+    # prn_zoo_manifest[] = before_manifest_df[column_name]
+for column_name in hidden_existing_output_columns:
+    prn_zoo_manifest[column_name] = before_manifest_df[column_name]
+
+pdb.set_trace()
 
 # Add attribution columns for DG, Planet etc
 # so that each subject has the required image attribution and license information.
@@ -102,6 +147,7 @@ for index, row in before_manifest_df.iterrows():
 # x_km = (row['x_m_max'] - row['x_m_min']) / 1000
 # y_km = (row['y_m_max'] - row['y_m_min']) / 1000
 
-
 # look at hiding most metadata from talk
 # In future deployments it might be good to hide most of the metadata columns so that people don’t have to scroll to get to the Maps links (which always seem to show up at the bottom no matter where they are in the manifest). But that will require making my processing scripts able to deal with the “//”, “#” and “!” prefixes that would be needed for that. So I haven’t done it yet.
+
+prm_zoo_manifest.to_csv(csv_manifest_output_path)
