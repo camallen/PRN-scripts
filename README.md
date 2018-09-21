@@ -66,15 +66,12 @@ Note: most likely not needed right now
 
 Keep following the steps outlined in https://docs.google.com/document/d/1QveOh74QpxEIhxx--7t9Swahe2BmG5yBBtqhSRtLLUk/edit#
 
-Subject import from TIFF
-
-0. Check the subject metadata makes sense and add more in, e.g. add image scale to the metadata (subtract corner coordinates in meters and report as e.g. 1.8 km x 1.8 km). This is a placeholder measure for adding a proper scale bar to the jpegs.
-0. auto make the subject set manifest via the tiles_*_jpg folders and the accompanying *_extra.csv file metadata. ensure they match while making the manifest
+1. Write a tool to stage the before / after jpg data and subject manifest for uploading
+0. Add in the panoptes cli tool for subject uploading
 0. use the zooniverse cli tool to upload the created manifest
 0. look at adding in blank image cuts (use file size as a proxy) while creating the subject manifest
 
 Classification data export to IBCC format
-1. export classification data from Zooniverse API
-0. Use coleman offline aggregation tool to get the extracts for each worklfow (audit the workflow, point tool data should work)
-0. Convert the flat csv files in point 2 to IBCC format (see https://github.com/zooniverse/Data-digging/blob/master/example_scripts/planetary_response_network/caribbean_irma_2017/extract_markings_to1file.py)
-0. Get an example of the IBCC input format
+1. Expand on work by Sam Aroney in https://github.com/AroneyS/prn_data_extract
+0. Generalise the constants in code using the aggregation yaml directives
+0. Make it run under this docker image?
