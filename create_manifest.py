@@ -105,6 +105,15 @@ prn_zoo_manifest['google_maps_link'] = after_manifest_df['google_maps_link']
 prn_zoo_manifest['openstreetmap_link'] = after_manifest_df['openstreetmap_link']
 prn_zoo_manifest['attribution'] = attribution_text
 
+# add image scale coords in (put this into the convert_tiles_to_jpg.py script?)
+def calculate_km_scale(row, col_name_prefix):
+    max_col = '%s_m_max' % col_name_prefix
+    min_col = '%s_m_min' % col_name_prefix
+    return (row[max_col] - row[min_col]) / 1000
+
+prn_zoo_manifest['x_km'] = before_manifest_df.apply(calculate_km_scale, args=('x'), axis=1)
+prn_zoo_manifest['y_km'] = before_manifest_df.apply(calculate_km_scale, args=('y'), axis=1)
+
 # create the metadata that will not be shown to users
 #
 # Headers that begin with "#" or "//" denote private fields that will not be
@@ -141,11 +150,5 @@ for column_name in hidden_existing_output_columns:
     metadata_header = "!%s" % column_name
     prn_zoo_manifest[metadata_header] = before_manifest_df[column_name]
 
-# add image scale coords in (put this into the convert_tiles_to_jpg.py script?)
-# x_km = (row['x_m_max'] - row['x_m_min']) / 1000
-# y_km = (row['y_m_max'] - row['y_m_min']) / 1000
-
-# look at hiding most metadata from talk
-# In future deployments it might be good to hide most of the metadata columns so that people don’t have to scroll to get to the Maps links (which always seem to show up at the bottom no matter where they are in the manifest). But that will require making my processing scripts able to deal with the “//”, “#” and “!” prefixes that would be needed for that. So I haven’t done it yet.
 
 prm_zoo_manifest.to_csv(csv_manifest_output_path)
