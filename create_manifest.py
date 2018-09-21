@@ -150,5 +150,8 @@ for column_name in hidden_existing_output_columns:
     metadata_header = "!%s" % column_name
     prn_zoo_manifest[metadata_header] = before_manifest_df[column_name]
 
+output_manifest_name = "subject_manifest.csv"
+csv_manifest_output_path = "%s/%s" % (tiled_data_dir, output_manifest_name)
+prn_zoo_manifest.to_csv(csv_manifest_output_path)
 
-prm_zoo_manifest.to_csv(csv_manifest_output_path)
+print("Wrote before/after subject manifest csv to %s" % csv_manifest_output_path)
