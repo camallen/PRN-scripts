@@ -19,15 +19,17 @@ before_csv_infile = args.before_csv_infile
 after_csv_infile  = args.after_csv_infile
 attribution_source  = args.attribution_source
 
-pdb.set_trace()
-
-
-# TODO: add provider provider param for input for correct subject metadata source attribution
-# DigitalGlobe Open Data Program - Creative Commons Attribution Non Commercial 4.0
-# Planet Team ([YEAR]). Planet Application Program Interface: In Space For Life on Earth. San Francisco, CA. https://api.planet.com License: CC-BY-SA
-# Copernicus Sentinel data [Year] for Sentinel data
-# USGS/NASA Landsat
-pdb.set_trace()
+if attribution_source == 'dg':
+    attribution_text = 'DigitalGlobe Open Data Program - Creative Commons Attribution Non Commercial 4.0'
+elif attribution_source == 'planet':
+    attribution_text = 'Planet Team ([YEAR]). Planet Application Program Interface: In Space For Life on Earth. San Francisco, CA. https://api.planet.com License: CC-BY-SA'
+elif attribution_source == 'sentinel':
+    attribution_text = 'Copernicus Sentinel data [Year] for Sentinel data'
+elif attribution_source == 'landsat':
+    attribution_text = 'USGS/NASA Landsat'
+else:
+    print("Unknown image data source, muse be one of the --source opts only")
+    sys.exit(1)
 
 print("Constructing the before / after manifest upload CSV...")
 
@@ -89,10 +91,32 @@ for index, row in before_manifest_df.iterrows():
         break
 
 # All input validations have passed!
+# add more in here as they come along
 
-# construct a combined data from that will create the resulting manifest
-# copying the the jpg before tile and associated metadata
-# and append the after subject tile jpg as well
+# create the export data frame
+prn_zoo_manifest = pd.DataFrame(index=before_manifest_df.index, columns=[])
+
+# create the metadata to show to users
+prn_zoo_manifest['jpg_file_before'] = before_manifest_df['jpg_file']
+prn_zoo_manifest['jpg_file_after'] = after_manifest_df['jpg_file']
+prn_zoo_manifest['tif_file_before'] = before_manifest_df['tif_file']
+prn_zoo_manifest['tif_file_after'] = after_manifest_df['tif_file']
+prn_zoo_manifest['google_maps_link'] = after_manifest_df['google_maps_link']
+prn_zoo_manifest['openstreetmap_link'] = after_manifest_df['openstreetmap_link']
+prn_zoo_manifest['attribution'] = attribution_text
+
+# create the metadata that will not be shown to users
+#
+# Headers that begin with "#" or "//" denote private fields that will not be
+#   visible to classifiers in the main classification interface or in the
+#   Talk discussion tool.
+#
+# Headers that begin with "!" denote fields that will not be visible to
+#    classifiers in the main classification interface but will be visible
+#    after classification in the Talk discussion tool.
+#
+# https://github.com/zooniverse/Panoptes-Front-End/blob/21cf42485929a62938112d5e2d4bca1a6702b00e/app/pages/lab/subject-set.cjsx#L212
+
 hidden_existing_output_columns = (
     'projection_orig',
     'lat_ctr',
@@ -112,36 +136,10 @@ hidden_existing_output_columns = (
     'tifsize_x_pix',
     'tifsize_y_pix'
 )
-non_hidden_output_cols = (
-    'google_maps_link',
-    'openstreetmap_link'
-)
-# before_manifest_df.columns
-# 'tif_file', 'x_m_min', 'x_m_max', 'y_m_min', 'y_m_max',
-#        'x_m_ctr', 'y_m_ctr', 'projection_orig', 'jpg_file', 'lon_min',
-#        'lon_max', 'lat_min', 'lat_max', 'lon_ctr', 'lat_ctr', 'tifsize_x_pix',
-#        'tifsize_y_pix', 'imsize_x_pix', 'imsize_y_pix', 'google_maps_link',
-#        'openstreetmap_link'
 
-prn_zoo_manifest = pd.DataFrame(index=before_manifest_df.index, columns=[])
-prn_zoo_manifest['jpg_file_before'] = before_manifest_df['jpg_file']
-prn_zoo_manifest['jpg_file_after'] = after_manifest_df['jpg_file']
-prn_zoo_manifest['tif_file_before'] = before_manifest_df['tif_file']
-prn_zoo_manifest['tif_file_after'] = after_manifest_df['tif_file']
-
-# TODO: add the source attribution from a runtime param
-prn_zoo_manifest['attribution'] = 'TODO: Attribution source goes here!'
-
-# for column_name in hidden_existing_output_columns:
-#     "" % column_name
-    # prn_zoo_manifest[] = before_manifest_df[column_name]
 for column_name in hidden_existing_output_columns:
-    prn_zoo_manifest[column_name] = before_manifest_df[column_name]
-
-pdb.set_trace()
-
-# Add attribution columns for DG, Planet etc
-# so that each subject has the required image attribution and license information.
+    metadata_header = "!%s" % column_name
+    prn_zoo_manifest[metadata_header] = before_manifest_df[column_name]
 
 # add image scale coords in (put this into the convert_tiles_to_jpg.py script?)
 # x_km = (row['x_m_max'] - row['x_m_min']) / 1000
