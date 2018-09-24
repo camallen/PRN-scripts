@@ -7,7 +7,6 @@ zooniverse upload csv manifest for use by the panoptes cli subject uploader
 
 import sys, os, re, argparse
 import pandas as pd
-import pdb # pdb.set_trace()
 
 parser = argparse.ArgumentParser(description='Create a tiled image data csv manifest to upload subjects to the Zooniverse.')
 parser.add_argument('--source', dest='attribution_source', choices=['dg', 'planet', 'sentinel', 'landsat'], required=True)
