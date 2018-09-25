@@ -56,7 +56,7 @@ For each epoch run the following commands:
 + `docker-compose run --rm tprn python create_manifest.py outputs/roi_before_extra.csv outputs/roi_after_extra.csv`
 
 # Upload the manifest data to the Zooniverse
-+ `docker-compose run --rm tprn python upload_manifest.py outputs/subject_manifest.csv`
++ `docker-compose run --rm tprn python upload_manifest.py --subject-set 1 outputs/subject_manifest.csv`
 
 Corral the manifest subject data and upload the subjects to the Zooniverse. Should this fail at any point it you can restart it and it will start where it left off.
 
