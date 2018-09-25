@@ -47,20 +47,21 @@ proc_to_find_last_uploaded_index = subprocess.run(["tail", "-n", "1", upload_sta
 #   returncode=1, stdout=b'',
 #   stderr=b"tail: cannot open 'outputs/upload_state_tracker.txt' for reading: No such file or directory\n"
 #)
-pdb.set_trace()
-if last_uploaded_index.returncode == 1:
+if proc_to_find_last_uploaded_index.returncode == 1:
     # start at the beginning
     last_uploaded_index = 0
 else:
     # file format is index,last_file_name.txt
-    tail_output = str(t.stdout, 'utf-8')
-    index_to_start_upload = tail_output.split(',')[0]
+    tail_output = str(proc_to_find_last_uploaded_index.stdout, 'utf-8')
+    last_uploaded_index = int(tail_output.split(',')[0])
 
 # symlink all the tiled jpg data to the marshaling dir for uplaod
 for index, row in manifest_csv_file_df.iterrows():
     # skip to where we were up to
-    if index <= index_to_start_upload:
+    if index <= last_uploaded_index:
         continue
+
+    pdb.set_trace()
 
     # create the batch of data to upload
     before_file_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file_before'])
