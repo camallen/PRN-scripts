@@ -92,7 +92,7 @@ for index, row in manifest_csv_file_df.iterrows():
 
         # TODO: work on this function to be quieter (opt)
         # and not use the latest data, maybe create a branch that has the changes but on the older non-async versions
-        subject_set.subject_set_upload(subject_set_id, [abs_path_to_manifest_file], True, [], None)
+        subject_set.subject_set_upload(subject_set_id, [symlink_path], True, [], None)
 
         # write the index state to the tracker file path
         # use python code though
