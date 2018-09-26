@@ -82,9 +82,14 @@ for index, row in manifest_csv_file_df.iterrows():
         # so we have a batch ready right? we can just call a python upload to run
         pdb.set_trace()
 
+        # write the index state to the tracker file path
+        # use python code though
+        upload_state_tracker_file = open(upload_state_tracker_path, "a")
+        upload_state_tracker_file.write("%s,%s" % (index,row['jpg_file_before']))
+        upload_state_tracker_file.close()
+
         # reset the batch
         manifest_rows_to_upload_in_batch = []
-
 
     else:
         continue
