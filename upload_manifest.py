@@ -55,29 +55,39 @@ else:
     tail_output = str(proc_to_find_last_uploaded_index.stdout, 'utf-8')
     last_uploaded_index = int(tail_output.split(',')[0])
 
+manifest_rows_to_upload_in_batch = []
+
 # symlink all the tiled jpg data to the marshaling dir for uplaod
 for index, row in manifest_csv_file_df.iterrows():
     # skip to where we were up to
     if index <= last_uploaded_index:
         continue
 
-    pdb.set_trace()
+    # add the row to the batch we are processing
+    manifest_rows_to_upload_in_batch.append(row)
+    num_rows_in_batch = len(manifest_rows_to_upload_in_batch)
 
-    # create the batch of data to upload
-    before_file_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file_before'])
-    symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_before'])
-    if not os.path.isfile(symlink_path):
-        os.symlink(os.path.abspath(before_file_path), symlink_path)
+    if num_rows_in_batch == batch_size:
+        # link the row data for uploading
+        before_file_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file_before'])
+        symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_before'])
+        if not os.path.isfile(symlink_path):
+            os.symlink(os.path.abspath(before_file_path), symlink_path)
 
-    after_file_path = "%s/tiles_after_jpg/%s" % (tiled_data_dir, row['jpg_file_after'])
-    symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_after'])
-    if not os.path.isfile(symlink_path):
-        os.symlink(os.path.abspath(after_file_path), symlink_path)
+        after_file_path = "%s/tiles_after_jpg/%s" % (tiled_data_dir, row['jpg_file_after'])
+        symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_after'])
+        if not os.path.isfile(symlink_path):
+            os.symlink(os.path.abspath(after_file_path), symlink_path)
 
-# now for each batch of subjects in the manifest upload the batch
-# create a sub manifest
-# for index, row in manifest_csv_file_df.iterrows():
-#     pdb.set_trace()
+        # so we have a batch ready right? we can just call a python upload to run
+        pdb.set_trace()
+
+        # reset the batch
+        manifest_rows_to_upload_in_batch = []
+
+
+    else:
+        continue
 
 
 # os.path.isfile(symlink_path)
