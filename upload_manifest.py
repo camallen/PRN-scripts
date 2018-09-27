@@ -9,6 +9,7 @@ import sys, os, re, argparse, subprocess
 import pandas as pd
 import pdb # pdb.set_trace()
 from panoptes_cli.commands import subject_set
+from panoptes_client import Panoptes
 
 # allow OS env to set a defaultS
 default_batch_size = os.environ.get('BATCH_SIZE',10)
@@ -57,6 +58,16 @@ else:
     last_uploaded_index = int(tail_output.split(',')[0])
 
 manifest_rows_to_upload_in_batch = []
+batch_number = 1
+
+# setup access to the Zooniverse API
+username = os.environ.get('ZOONIVERSE_USERNAME')
+password = os.environ.get('ZOONIVERSE_PASSWORD')
+creds_exist = username and password
+if not creds_exist:
+    print("Missing zooniverse credentials, pass them in as environment variables")
+    exit(1)
+Panoptes.connect(username=username, password=password, admin=admin_mode)
 
 # symlink all the tiled jpg data to the marshaling dir for uplaod
 for index, row in manifest_csv_file_df.iterrows():
@@ -69,6 +80,8 @@ for index, row in manifest_csv_file_df.iterrows():
     num_rows_in_batch = len(manifest_rows_to_upload_in_batch)
 
     if num_rows_in_batch == batch_size:
+        print("Uploading batch number: %s" % batch_number)
+
         # link the row data for uploading
         before_file_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file_before'])
         symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_before'])
@@ -80,19 +93,22 @@ for index, row in manifest_csv_file_df.iterrows():
         if not os.path.isfile(symlink_path):
             os.symlink(os.path.abspath(after_file_path), symlink_path)
 
-        # so we have a batch ready right? we can just call a python upload to run
-        pdb.set_trace()
-
         # marshal the manifest to where symlinked subjects are
         abs_path_to_manifest_file = os.path.abspath(manifest_csv_file_path)
         csv_manifest_file_name = os.path.basename(manifest_csv_file_path)
-        symlink_path = "%s/%s" % (marshal_dir, csv_manifest_file_name)
-        if not os.path.isfile(symlink_path):
-            os.symlink(abs_path_to_manifest_file, symlink_path)
+        manifest_symlink_path = "%s/%s" % (marshal_dir, csv_manifest_file_name)
+        if not os.path.isfile(manifest_symlink_path):
+            os.symlink(abs_path_to_manifest_file, manifest_symlink_path)
 
         # TODO: work on this function to be quieter (opt)
         # and not use the latest data, maybe create a branch that has the changes but on the older non-async versions
-        subject_set.subject_set_upload(subject_set_id, [symlink_path], True, [], None)
+
+        pdb.set_trace()
+
+
+        subject_set.subject_set_upload(subject_set_id, [manifest_symlink_path], True, [], None)
+
+        # TODO: mount the panoptes creds into the
 
         # write the index state to the tracker file path
         # use python code though
@@ -102,6 +118,8 @@ for index, row in manifest_csv_file_df.iterrows():
 
         # reset the batch
         manifest_rows_to_upload_in_batch = []
+        # bump the batch number
+        batch_number += 1
 
     else:
         continue
