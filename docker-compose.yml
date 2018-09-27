@@ -5,6 +5,7 @@ services:
     environment:
       - "DATA_IN_DIR=${DATA_OUT_DIR:-inputs}"
       - "DATA_OUT_DIR=${DATA_OUT_DIR:-outputs}"
+      - PANOPTES_DEBUG=true
     volumes:
       - "${TPRN_IN_DATA_DIR:-./inputs}:/tprn/inputs"
       - "${TPRN_OUT_DATA_DIR:-./outputs}:/tprn/outputs"
