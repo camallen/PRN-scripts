@@ -105,6 +105,20 @@ for index, row in manifest_csv_file_df.iterrows():
 
         pdb.set_trace()
 
+        # i need to catch exceptions here and abort asap if we get any?
+        # E.g. https://github.com/zooniverse/panoptes-cli/issues/83
+        # Traceback (most recent call last):
+        #   File "upload_manifest.py", line 109, in <module>
+        #     subject_set.subject_set_upload(subject_set_id, [manifest_symlink_path], True, [], None)
+        #   File "/opt/conda/envs/tprn/lib/python3.7/site-packages/panoptes_cli/commands/subject_set.py", line 277, in subject_set_upload
+        #     move_created(0)
+        #   File "/opt/conda/envs/tprn/lib/python3.7/site-packages/panoptes_cli/commands/subject_set.py", line 248, in move_created
+        #     if subject.async_save_result():
+        # TypeError: 'bool' object is not callable
+
+        # Look into how we can better handle errors and rollback in the cli subject_st_upload function
+        # i.e. delete the subjects we haven't unlinked and report back to the calling code?
+        # maybe this should be here not in the CLI?
 
         subject_set.subject_set_upload(subject_set_id, [manifest_symlink_path], True, [], None)
 
