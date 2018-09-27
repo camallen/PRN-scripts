@@ -9,6 +9,7 @@ services:
       - "${TPRN_IN_DATA_DIR:-./inputs}:/tprn/inputs"
       - "${TPRN_OUT_DATA_DIR:-./outputs}:/tprn/outputs"
       - .:/tprn # remove this after dev, it's used to inject the latest code
+      - ${HOME}/.panoptes/:/root/.panoptes/
 
   tprn-conda-env-build:
     build:
