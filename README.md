@@ -58,7 +58,7 @@ For each epoch run the following commands:
 # Upload the manifest data to the Zooniverse
 + `docker-compose run --rm tprn python upload_manifest.py --subject-set 1 outputs/subject_manifest.csv`
 
-Corral the manifest subject data and upload the subjects to the Zooniverse. Should this fail at any point it you can restart it and it will start where it left off.
+Marshal the manifest subject data and upload the subjects to the Zooniverse. Should this fail at any point it you can restart it and it will start where it left off.
 
 # Rebuild the conda deps and export the config
 Note: most likely not needed right now
