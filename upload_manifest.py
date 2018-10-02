@@ -135,5 +135,7 @@ for index, row in manifest_csv_file_df.iterrows():
 if len(saved_subjects) > 0:
     uploader.add_batch_to_subject_set(subject_set, saved_subjects)
     uploaded_subjects_count += len(saved_subjects)
+    # cleanup the state tracker file to ensure we don't replay the last set of data
+    os.remove(upload_state_tracker_path)
 
 print("Finished uploading {} subjects".format(uploaded_subjects_count))
