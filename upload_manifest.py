@@ -56,10 +56,11 @@ manifest_csv_file_df = pd.read_csv(manifest_csv_file_path)
 # use a file to indicate this state
 upload_state_tracker_path = "%s/%s" % (tiled_data_dir, 'upload_state_tracker.txt')
 last_uploaded_index = uploader.last_uploaded_index(upload_state_tracker_path)
+# the restartable count of subjects that have been uploaded
+uploaded_subjects_count = last_uploaded_index
 
 # hold a list of created but unlinked subject set subjects
 saved_subjects = []
-uploaded_subjects_count = 0
 
 # handle (Ctrl+C) keyboard interrupt
 def signal_handler(*args):
