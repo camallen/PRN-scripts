@@ -26,7 +26,6 @@ ENV PATH /opt/conda/envs/tprn/bin:$PATH
 # install the panoptes-cli tool for interacting with the Zooniverse API
 # using a branch due to https://github.com/zooniverse/panoptes-cli/pull/86
 RUN pip install --upgrade pip
-RUN pip install -U git+git://github.com/zooniverse/panoptes-cli.git@allow-cli-and-api-code-use
 RUN pip install -U git+git://github.com/zooniverse/panoptes-python-client.git
 
 ADD ./ /tprn

@@ -5,11 +5,12 @@ zooniverse upload csv manifest for use by the panoptes cli subject uploader
 
 '''
 
-import sys, os, re, argparse, subprocess
+import sys, os, re, argparse, signal
 import pandas as pd
 import pdb # pdb.set_trace()
-from panoptes_cli.commands import subject_set
-from panoptes_client import Panoptes
+from panoptes_client import Panoptes, SubjectSet
+from panoptes_client.panoptes import PanoptesAPIException
+import uploader
 
 # allow OS env to set a defaultS
 default_batch_size = os.environ.get('BATCH_SIZE',10)
@@ -31,35 +32,6 @@ batch_size = args.batch_size
 admin_mode = args.admin_mode
 subject_set_id = args.subject_set_id
 
-# setup the tile output paths
-if not os.path.exists(marshal_dir):
-    os.mkdir(marshal_dir)
-
-print("Marshaling the manifest subject file data into directory for uploads...")
-
-manifest_csv_file_df = pd.read_csv(manifest_csv_file_path)
-
-# TODO: find out if we are resuming a previously borked upload
-# use a file to indicate this state
-upload_state_tracker_path = "%s/%s" % (tiled_data_dir, 'upload_state_tracker.txt')
-
-proc_to_find_last_uploaded_index = subprocess.run(["tail", "-n", "1", upload_state_tracker_path], capture_output=True)
-# Proxy for missing file
-# CompletedProcess(args=['tail', '-n', '1', 'outputs/upload_state_tracker.txt'],
-#   returncode=1, stdout=b'',
-#   stderr=b"tail: cannot open 'outputs/upload_state_tracker.txt' for reading: No such file or directory\n"
-#)
-if proc_to_find_last_uploaded_index.returncode == 1:
-    # start at the beginning
-    last_uploaded_index = 0
-else:
-    # file format is index,last_file_name.txt
-    tail_output = str(proc_to_find_last_uploaded_index.stdout, 'utf-8')
-    last_uploaded_index = int(tail_output.split(',')[0])
-
-manifest_rows_to_upload_in_batch = []
-batch_number = 1
-
 # setup access to the Zooniverse API
 username = os.environ.get('ZOONIVERSE_USERNAME')
 password = os.environ.get('ZOONIVERSE_PASSWORD')
@@ -69,75 +41,98 @@ if not creds_exist:
     exit(1)
 Panoptes.connect(username=username, password=password, admin=admin_mode)
 
+# setup the tile output paths
+if not os.path.exists(marshal_dir):
+    os.mkdir(marshal_dir)
+
+# find / create the subject set to upload to
+# print("Marshaling the manifest subject file data into directory for uploads...")
+subject_set = SubjectSet.find(subject_set_id)
+print("Found subject set with id: {} to upload data to.".format(subject_set.id))
+
+manifest_csv_file_df = pd.read_csv(manifest_csv_file_path)
+
+# TODO: find out if we are resuming a previously borked upload
+# use a file to indicate this state
+upload_state_tracker_path = "%s/%s" % (tiled_data_dir, 'upload_state_tracker.txt')
+last_uploaded_index = uploader.last_uploaded_index(upload_state_tracker_path)
+
+# hold a list of created but unlinked subject set subjects
+saved_subjects = []
+uploaded_subjects_count = 0
+
+# handle (Ctrl+C) keyboard interrupt
+def signal_handler(*args):
+    print('You pressed Ctrl+C! - attempting to clean up gracefully')
+    remaining_subjects_to_link = len(saved_subjects)
+    try:
+        print("Linking %s remaining uploaded subjects" % remaining_subjects_to_link)
+        uploader.add_batch_to_subject_set(subject_set, saved_subjects)
+        uploader.update_state_tracker(upload_state_tracker_path, index, row['jpg_file_before'])
+        uploader.remove_symlinks(row_media_files)
+    except PanoptesAPIException as e:
+        print('Failed to link %s remaining subjects' % remaining_subjects_to_link)
+        uploader.handle_batch_failure(saved_subjects)
+    finally:
+        raise SystemExit
+#register the handler for interrupt signal
+signal.signal(signal.SIGINT, signal_handler)
+
 # symlink all the tiled jpg data to the marshaling dir for uplaod
+print("Marshaling the manifest subject file data into directory for uploads...")
 for index, row in manifest_csv_file_df.iterrows():
     # skip to where we were up to
     if index <= last_uploaded_index:
         continue
 
-    # add the row to the batch we are processing
-    manifest_rows_to_upload_in_batch.append(row)
-    num_rows_in_batch = len(manifest_rows_to_upload_in_batch)
+    # before_symlink_path = uploader.symlink_image(marshal_dir, tiled_data_dir, row['jpg_file_before'])
+    # after_symlink_path = uploader.symlink_image(marshal_dir, tiled_data_dir, row['jpg_file_after'])
 
-    if num_rows_in_batch == batch_size:
-        print("Uploading batch number: %s" % batch_number)
+    # TODO: why does the above function leave the after as a broken symlink?
+    # [print("%s file exists? %s" % (file, os.path.isfile(file))) for file in row_media_files]
+    before_file_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file_before'])
+    before_symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_before'])
+    if not os.path.isfile(before_symlink_path):
+        os.symlink(os.path.abspath(before_file_path), before_symlink_path)
 
-        # link the row data for uploading
-        before_file_path = "%s/tiles_before_jpg/%s" % (tiled_data_dir, row['jpg_file_before'])
-        symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_before'])
-        if not os.path.isfile(symlink_path):
-            os.symlink(os.path.abspath(before_file_path), symlink_path)
+    after_file_path = "%s/tiles_after_jpg/%s" % (tiled_data_dir, row['jpg_file_after'])
+    after_symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_after'])
+    if not os.path.isfile(after_symlink_path):
+        os.symlink(os.path.abspath(after_file_path), after_symlink_path)
 
-        after_file_path = "%s/tiles_after_jpg/%s" % (tiled_data_dir, row['jpg_file_after'])
-        symlink_path = "%s/%s" % (marshal_dir, row['jpg_file_after'])
-        if not os.path.isfile(symlink_path):
-            os.symlink(os.path.abspath(after_file_path), symlink_path)
+    # try and handle api failures, intermittent network, etc.
+    try:
+        # read the pandas series here without the index from row
+        # to construct a dict object for use as metadata
+        metadata = row[1:-1].to_dict()
+        row_media_files = [ before_symlink_path, after_symlink_path ]
+        subject = uploader.create_subject(subject_set.links.project, metadata, row_media_files)
+        # save the list of subjects to add to the subject set above
+        saved_subjects.append(subject)
+        # clean up the linked media files
+        uploader.remove_symlinks(row_media_files)
 
-        # marshal the manifest to where symlinked subjects are
-        abs_path_to_manifest_file = os.path.abspath(manifest_csv_file_path)
-        csv_manifest_file_name = os.path.basename(manifest_csv_file_path)
-        manifest_symlink_path = "%s/%s" % (marshal_dir, csv_manifest_file_name)
-        if not os.path.isfile(manifest_symlink_path):
-            os.symlink(abs_path_to_manifest_file, manifest_symlink_path)
+    except PanoptesAPIException as e:
+        print('\nError occurred on row: {} of the csv file'.format(len(saved_subjects)+1))
+        print('Details of error: {}'.format(e))
+        uploader.handle_batch_failure(saved_subjects)
+        raise SystemExit
 
-        # TODO: work on this function to be quieter (opt)
-        # and not use the latest data, maybe create a branch that has the changes but on the older non-async versions
+    # for each batch of new subjects
+    if len(saved_subjects) % batch_size == 0:
+        uploader.add_batch_to_subject_set(subject_set, saved_subjects)
+        uploaded_subjects_count += len(saved_subjects)
+        saved_subjects = []
 
-        pdb.set_trace()
+        # TODO: move this to a progress bar
+        print("Uploaded and linked {} subjects".format(uploaded_subjects_count))
 
-        # i need to catch exceptions here and abort asap if we get any?
-        # E.g. https://github.com/zooniverse/panoptes-cli/issues/83
-        # Traceback (most recent call last):
-        #   File "upload_manifest.py", line 109, in <module>
-        #     subject_set.subject_set_upload(subject_set_id, [manifest_symlink_path], True, [], None)
-        #   File "/opt/conda/envs/tprn/lib/python3.7/site-packages/panoptes_cli/commands/subject_set.py", line 277, in subject_set_upload
-        #     move_created(0)
-        #   File "/opt/conda/envs/tprn/lib/python3.7/site-packages/panoptes_cli/commands/subject_set.py", line 248, in move_created
-        #     if subject.async_save_result():
-        # TypeError: 'bool' object is not callable
-
-        # Look into how we can better handle errors and rollback in the cli subject_st_upload function
-        # i.e. delete the subjects we haven't unlinked and report back to the calling code?
-        # maybe this should be here not in the CLI?
-
-        subject_set.subject_set_upload(subject_set_id, [manifest_symlink_path], True, [], None)
-
-        # TODO: mount the panoptes creds into the
-
-        # write the index state to the tracker file path
-        # use python code though
-        upload_state_tracker_file = open(upload_state_tracker_path, "a")
-        upload_state_tracker_file.write("%s,%s" % (index,row['jpg_file_before']))
-        upload_state_tracker_file.close()
-
-        # reset the batch
-        manifest_rows_to_upload_in_batch = []
-        # bump the batch number
-        batch_number += 1
-
-    else:
-        continue
+        uploader.update_state_tracker(upload_state_tracker_path, index, row['jpg_file_before'])
 
 
-# os.path.isfile(symlink_path)
-# os.unlink(symlink_path)
+# catch any left over batches in the file
+if len(saved_subjects) > 0:
+    add_batch_to_subject_set(subject_set, saved_subjects)
+    uploaded_subjects_count += len(saved_subjects)
+
+print("Finished uploading {} subjects".format(uploaded_subjects_count))

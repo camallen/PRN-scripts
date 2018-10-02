@@ -7,7 +7,7 @@ services:
       - "DATA_OUT_DIR=${DATA_OUT_DIR:-outputs}"
       - ZOONIVERSE_USERNAME=$ZOONIVERSE_USERNAME
       - ZOONIVERSE_PASSWORD=$ZOONIVERSE_PASSWORD
-      - PANOPTES_DEBUG=true # remove this after dev
+      # - PANOPTES_DEBUG=true # remove this after dev
     volumes:
       - "${TPRN_IN_DATA_DIR:-./inputs}:/tprn/inputs"
       - "${TPRN_OUT_DATA_DIR:-./outputs}:/tprn/outputs"
