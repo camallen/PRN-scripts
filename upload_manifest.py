@@ -119,7 +119,7 @@ for index, row in manifest_csv_file_df.iterrows():
         uploader.handle_batch_failure(saved_subjects)
         raise SystemExit
 
-    # for each batch of new subjects
+    # link each batch of new subjects to the subject set
     if len(saved_subjects) % batch_size == 0:
         uploader.add_batch_to_subject_set(subject_set, saved_subjects)
         uploaded_subjects_count += len(saved_subjects)
