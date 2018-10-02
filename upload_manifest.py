@@ -133,7 +133,7 @@ for index, row in manifest_csv_file_df.iterrows():
 
 # catch any left over batches in the file
 if len(saved_subjects) > 0:
-    add_batch_to_subject_set(subject_set, saved_subjects)
+    uploader.add_batch_to_subject_set(subject_set, saved_subjects)
     uploaded_subjects_count += len(saved_subjects)
 
 print("Finished uploading {} subjects".format(uploaded_subjects_count))
