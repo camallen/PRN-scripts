@@ -73,10 +73,8 @@ Note: most likely not needed right now
 
 Keep following the steps outlined in https://docs.google.com/document/d/1QveOh74QpxEIhxx--7t9Swahe2BmG5yBBtqhSRtLLUk/edit#
 
-1. Write a tool to stage the before / after jpg data and subject manifest for uploading
-0. Add in the panoptes cli tool for subject uploading
-0. use the zooniverse cli tool to upload the created manifest
-0. look at adding in blank image cuts (use file size as a proxy) while creating the subject manifest
+1. look at adding in blank image cuts (use file size as a proxy) while creating the subject manifest (heuristics via file size should work)
+0. Fix year in source metadata citations
 
 Classification data export to IBCC format
 1. Expand on work by Sam Aroney in https://github.com/AroneyS/prn_data_extract

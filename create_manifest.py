@@ -19,6 +19,7 @@ before_csv_infile = args.before_csv_infile
 after_csv_infile  = args.after_csv_infile
 attribution_source  = args.attribution_source
 
+# TODO: fix the YEAR metadata input
 if attribution_source == 'dg':
     attribution_text = 'DigitalGlobe Open Data Program - Creative Commons Attribution Non Commercial 4.0'
 elif attribution_source == 'planet':
