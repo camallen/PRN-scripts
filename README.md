@@ -4,19 +4,21 @@ Scripts to help build subjects and deploy Planetary Response Network (PRN) proje
 # Get started
 
 Use docker-compse to run the code and attach your input data to the container
-+ `TPRN_DATA_DIR=/your_tpnr_data_dir docker-compose run --rm tprn bash`
++ `TPRN_IN_DATA_DIR=/your_tpnr_data_dir docker-compose run --rm tprn bash`
 
 if you need to (re)build the container
 + `docker-compose build tprn`
 
 #### Add your local data directory to the docker container
-To allow the code to access you data directory you can specify the path via an ENV variable via `TPRN_DATA_DIR=/path/to/tiff/data` either at run time or for your shell session. This directory will be mounted into the running container to the
+To allow the code to access you data directory you can specify the path via an ENV variable via `TPRN_IN_DATA_DIR=/path/to/tiff/data` either at run time or for your shell session. This directory will be mounted into the running container to the
 `/tprn/data/` directory.
 
-To avoid specifying this every time you can setup your local data directory as an environment variable, e.g. `export TPRN_DATA_DIR=/your_tpnr_data_dir`.
+To avoid specifying this every time you can setup your local data directory as an environment variable, e.g. `export TPRN_IN_DATA_DIR=/your_tpnr_data_dir`.
 
-If you don't do this you will have to prefix `TPRN_DATA_DIR=/your_tpnr_data_dir` before the docker-compose commands below, e.g.
-+ `TPRN_DATA_DIR=/tprn_data/ docker-compose run --rm tprn python make_tiff_tiles.py`
+If you don't do this you will have to prefix `TPRN_IN_DATA_DIR=/your_tpnr_data_dir` before the docker-compose commands below, e.g.
++ `TPRN_IN_DATA_DIR=/tprn_data/ docker-compose run --rm tprn python make_tiff_tiles.py`
+
+Note: you can also set the data output directory using `TPRN_OUT_DATA_DIR` as well.
 
 All the example scripts below assume you have set this env variable.
 
@@ -53,7 +55,7 @@ For each epoch run the following commands:
 `docker-compose run --rm tprn python convert_tiles_to_jpg.py roi_planet_after.csv after --run`
 
 # Create the before/after subject manifest
-+ `docker-compose run --rm tprn python create_manifest.py outputs/roi_before_extra.csv outputs/roi_after_extra.csv`
++ `docker-compose run --rm tprn python create_manifest.py --source dg outputs/roi_before_extra.csv outputs/roi_after_extra.csv`
 
 # Upload the manifest data to the Zooniverse
 + `docker-compose run --rm tprn python upload_manifest.py --subject-set 1 outputs/subject_manifest.csv`
