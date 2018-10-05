@@ -7,6 +7,7 @@ zooniverse upload csv manifest for use by the panoptes cli subject uploader
 
 import sys, os, re, argparse
 import pandas as pd
+from difflib import SequenceMatcher as SM
 
 parser = argparse.ArgumentParser(description='Create a tiled image data csv manifest to upload subjects to the Zooniverse.')
 parser.add_argument('--source', dest='attribution_source', choices=['dg', 'planet', 'sentinel', 'landsat'], required=True)
@@ -55,11 +56,17 @@ for index, row in before_manifest_df.iterrows():
 
     before_prefix, before_suffix = re.split("before", row['jpg_file'])
     after_prefix, after_suffix = re.split("after", after_manifest_row['jpg_file'])
-    jpg_file_names_match = (before_prefix == after_prefix) and (before_suffix == after_suffix)
+    fuzzy_prefix_match_ratio = SM(None, before_prefix, after_prefix).ratio()
+    # super arbitrary cut off for fuzzy match - look into this further as example input files come in
+    # before_prefix = 'palu_2018_09_28_'
+    # after_prefix - 'palu_2018_09_29_10_01_'
+    # SM(None, before_prefix, after_prefix).ratio() =  0.7894736842105263
+    # SM(None, before_prefix, "blargh").ratio() =  0.09090909090909091
+    jpg_file_names_match = (fuzzy_prefix_match_ratio > 0.5) and (before_suffix == after_suffix)
 
     if not (tif_file_names_match and jpg_file_names_match):
         print('\nError: file tiling name parts do not match!')
-        print('Tile filenames in manifests for row %s do not match.and can not be grouped into 1 subject!' % (index))
+        print('Tile filenames in manifests for row %s do not match and can not be grouped into 1 subject!' % (index))
         print('%s and %s' % (row['tif_file'], after_manifest_row['tif_file']))
         print('%s and %s' % (row['jpg_file'], after_manifest_row['jpg_file']))
         break
