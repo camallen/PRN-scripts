@@ -24,6 +24,7 @@ Each manifest will contain information to run the different data processing stag
       "name": "tile_and_upload",
       "before_source": "before_geo_tiff_image_name.tiff",
       "after_source": "after_geo_tiff_image_name.tiff",
+      "imagery_source": 'planet',
       "zooniverse_project_id": "1",
       "zooniverse_subject_set_id": "1"
     },
