@@ -9,16 +9,20 @@ Each manifest will contain information to run the different data processing stag
 ### Example manifest
 ```
 {
-  "event_name": 'indonesia',
-  "ROI": {
-    "latitude": ['y1', 'y2'],
-    "longitude": ['x1', 'x2'],
-  },
-  "s3_metadata":
-    // INSERT SOME DATE / RUN metadata to s3 event paths
-    "s3_bucket_path": "planetary-response-network/data/",
-    "s3_bucket_suffix": "s3.amazonaws.com"
-  },
+  "event": {
+    "name": 'caribbean',
+    "date": 'October 2018'
+    "bounding_box_coords": {
+      "latitude": ['y1', 'y2'],
+      "longitude": ['x1', 'x2'],
+    },
+    "s3_metadata":
+      // INSERT SOME DATE / RUN metadata to s3 event paths
+      "s3_bucket_path": "planetary-response-network/data/",
+      "s3_bucket_suffix": "s3.amazonaws.com"
+    },
+  }
+
   "stages": [
     {
       "name": "tile_and_upload",
