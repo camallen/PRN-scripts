@@ -23,9 +23,10 @@ RUN echo "source activate tprn" > ~/.bashrc
 # activate the created tprn environment from the yaml file
 ENV PATH /opt/conda/envs/tprn/bin:$PATH
 
-# install the panoptes-cli tool for interacting with the Zooniverse API
-# using a branch due to https://github.com/zooniverse/panoptes-cli/pull/86
 RUN pip install --upgrade pip
+# switch to the released client >= v1.0.4 is available
 RUN pip install -U git+git://github.com/zooniverse/panoptes-python-client.git
+RUN pip install -U awscli
+
 
 ADD ./ /tprn
