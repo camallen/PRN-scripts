@@ -28,8 +28,8 @@ def input_header(header, instructions=""):
     print(underline)
     print(instructions + '\n')
 
-def manifest_name(user_supplied):
-    underscore = user_supplied.replace(" ", "_") + '.json'
+def event_name(user_supplied):
+    underscore = user_supplied.replace(" ", "_")
     return underscore.lower()
 
 def get_bool(prompt):
@@ -39,7 +39,15 @@ def get_bool(prompt):
         except KeyError:
            print('Invalid input please enter y or n!')
 
-json_manifest_file_path = 'outputs/prn_pipeline_manifest.json'
+current_dt = datetime.datetime.now()
+
+data = { "manifest_date": current_dt.strftime("%Y/%m/%d") }
+
+input_header("Questions you have to answer for the PRN event")
+data['name'] = input('What is the event name the PRN is activating for? ')
+
+event_name = event_name(data['name'])
+json_manifest_file_path = 'outputs/%s.json' % event_name
 use_existing_manifest = False
 
 manifet_exists = os.path.isfile(json_manifest_file_path)
@@ -52,15 +60,7 @@ if use_existing_manifest:
         data = json.load(f)
         s3_bucket_name = data['s3_metadata']['bucket_name']
         s3_bucket_path = data['s3_metadata']['bucket_path']
-
 else:
-    current_dt = datetime.datetime.now()
-
-    data = { "manifest_date": current_dt.strftime("%Y/%m/%d") }
-
-    input_header("Questions you have to answer for the PRN event")
-    data['name'] = input('What is the event name the PRN is activating for? ')
-
     input_header(
         "Bounding box for the event region of interest",
         'Use https://boundingbox.klokantech.com to get coords'
@@ -111,8 +111,7 @@ else:
         # json.dump(data, f, sort_keys = True, indent = 2, ensure_ascii=False)
         json.dump(data, f, ensure_ascii=False)
 
-
-s3_upload_location = 's3://' + s3_bucket_name + '/manifests/' + manifest_name(data['name'])
+s3_upload_location = 's3://' + s3_bucket_name + '/manifests/' + event_name + '.json'
 
 input_header('Upload the manifest to s3')
 try:
